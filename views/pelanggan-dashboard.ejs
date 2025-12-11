@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pelanggan - KURNIA</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        /* --- DASHBOARD ANIMATIONS & INTERACTIVITY --- */
+        body { animation: fadeIn 0.6s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* NAVBAR STYLES */
+        .navbar {
+            z-index: 1050; 
+            backdrop-filter: blur(10px); 
+            background-color: rgba(255, 255, 255, 0.98) !important;
+            height: 80px; 
+        }
+
+        /* SIDEBAR STYLES (FIXED) */
+        /* Perubahan di sini: Menggunakan fixed agar benar-benar diam */
+        .sidebar { 
+            position: fixed; /* Kunci posisi sidebar */
+            top: 80px; /* Jarak dari atas (sesuai tinggi navbar) */
+            bottom: 0; /* Tarik sampai bawah layar */
+            left: 0;
+            width: 16.666667%; /* Lebar manual setara col-lg-2 (2/12 = 16.66%) */
+            overflow-y: auto; /* Scroll internal jika menu panjang */
+            
+            /* Visual */
+            background-color: #fff; 
+            border-right: 1px solid #eee; 
+            transition: all 0.3s ease;
+            z-index: 1040; 
+        }
+
+        /* Sembunyikan Scrollbar sidebar */
+        .sidebar::-webkit-scrollbar { display: none; }
+        .sidebar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .sidebar-link { display: flex; align-items: center; padding: 12px 20px; color: var(--primary-color, #2c3e50); text-decoration: none; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border-radius: 12px; margin-bottom: 8px; font-weight: 500; }
+        .sidebar-link:hover { background-color: var(--bg-light, #f8f9fa); color: var(--accent-color, #c9a227); transform: translateX(5px); box-shadow: 2px 2px 8px rgba(0,0,0,0.05); }
+        .sidebar-link.active { background-color: var(--accent-color, #c9a227); color: #fff; box-shadow: 0 4px 12px rgba(201, 162, 39, 0.3); }
+        .sidebar-link i { font-size: 1.3rem; margin-right: 14px; width: 24px; text-align: center; transition: transform 0.3s ease; }
+        .sidebar-link:hover i { transform: scale(1.1) rotate(5deg); }
+        
+        /* CARD STYLES */
+        .dashboard-card { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 2px 15px rgba(0,0,0,0.03); height: 100%; border: 1px solid transparent; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; overflow: hidden; }
+        .dashboard-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); border-color: rgba(var(--accent-color-rgb, 201, 162, 39), 0.3); }
+        
+        .stat-icon { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; background-color: var(--bg-light, #f8f9fa); color: var(--accent-color, #c9a227); border-radius: 14px; font-size: 1.6rem; margin-bottom: 15px; transition: all 0.3s ease; }
+        .dashboard-card:hover .stat-icon { transform: scale(1.1); background-color: var(--accent-color, #c9a227); color: #fff; }
+        
+        .table-custom th { font-weight: 600; color: #6c757d; border-top: none; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        .table-custom td { vertical-align: middle; padding: 1.2rem 0.75rem; transition: background-color 0.2s ease; }
+        .table-hover tbody tr:hover { background-color: #f9f9f9; }
+        
+        .btn-action { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
+        .btn-action:hover { transform: scale(1.15); background-color: var(--primary-color, #2c3e50); color: #fff; }
+        
+        .nav-link.position-relative:hover .bi-bell { animation: bellRing 0.9s both; }
+        @keyframes bellRing { 0%, 100% { transform-origin: top; } 15% { transform: rotateZ(10deg); } 30% { transform: rotateZ(-10deg); } 45% { transform: rotateZ(5deg); } 60% { transform: rotateZ(-5deg); } 75% { transform: rotateZ(2deg); } }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 fixed-top shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold fs-4" href="/" style="letter-spacing: 1px;">KURNIA<span style="color: var(--accent-color, #c9a227);">.</span></a>
+            <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-4">
+                        <a href="/keranjang" class="nav-link position-relative text-dark p-2" title="Lihat Keranjang">
+                            <i class="bi bi-cart-fill fs-5"></i>
+                            <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 10px;"><%= cartCount %></span>
+                            <% } %>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-3 p-1 ps-3 pe-3 rounded-pill hover-bg-light transition-all" href="#" role="button" data-bs-toggle="dropdown">
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 38px; height: 38px; font-size: 14px; background: linear-gradient(45deg, #6b7b8c, #2c3e50);">
+                                <%= user.username.substring(0,2).toUpperCase() %>
+                            </div>
+                            <div class="d-none d-lg-block text-start">
+                                <div class="fw-semibold small text-dark"><%= user.username %></div>
+                                <div class="text-muted" style="font-size: 11px;">Member</div>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 rounded-4 overflow-hidden p-2">
+                            <li><a class="dropdown-item rounded-3 p-2 mb-1" href="/pelanggan/profil"><i class="bi bi-person me-3 text-muted"></i> Profil Saya</a></li>
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li><a class="dropdown-item rounded-3 p-2 text-danger fw-medium" href="/logout"><i class="bi bi-box-arrow-right me-3"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-0" style="margin-top: 80px;">
+        <div class="row g-0">
+
+            <div class="col-lg-2 d-none d-lg-block sidebar p-4 shadow-sm" style="z-index: 1000;">
+                <h6 class="text-muted text-uppercase small fw-bold mb-4 ls-2 ps-3 pt-3" style="letter-spacing: 1.5px; font-size: 0.75rem;">Menu Utama</h6>
+                <nav class="nav flex-column gap-2">
+                    <a href="/pelanggan/dashboard" class="sidebar-link active">
+                        <i class="bi bi-grid-fill"></i> Dashboard
+                    </a>
+                    <a href="/pelanggan/pesanan" class="sidebar-link">
+                        <i class="bi bi-bag-check-fill"></i> Pesanan Saya
+                    </a>
+                    <a href="/wishlist" class="sidebar-link">
+                        <i class="bi bi-heart-fill"></i> Wishlist
+                    </a>
+                     <h6 class="text-muted text-uppercase small fw-bold mt-5 mb-4 ls-2 ps-3" style="letter-spacing: 1.5px; font-size: 0.75rem;">Akun</h6>
+                    <a href="/pelanggan/profil" class="sidebar-link">
+                        <i class="bi bi-person-lines-fill"></i> Edit Profil
+                    </a>
+                    <a href="/logout" class="sidebar-link text-danger mt-5 bg-danger-subtle">
+                        <i class="bi bi-box-arrow-left"></i> Keluar
+                    </a>
+                </nav>
+            </div>
+
+            <div class="offcanvas offcanvas-start rounded-end-4" tabindex="-1" id="sidebarMenu" style="z-index: 1045;">
+                <div class="offcanvas-header border-bottom">
+                    <h5 class="offcanvas-title fw-bold">Menu Pelanggan</h5>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body p-4">
+                     <nav class="nav flex-column gap-2">
+                        <a href="/pelanggan/dashboard" class="sidebar-link active"><i class="bi bi-grid-fill"></i> Dashboard</a>
+                        <a href="/pelanggan/pesanan" class="sidebar-link"><i class="bi bi-bag-check-fill"></i> Pesanan Saya</a>
+                        <a href="/wishlist" class="sidebar-link"><i class="bi bi-heart-fill"></i> Wishlist</a>
+                        <hr class="my-4">
+                        <a href="/pelanggan/profil" class="sidebar-link"><i class="bi bi-person-lines-fill"></i> Edit Profil</a>
+                        <a href="/logout" class="sidebar-link text-danger bg-danger-subtle"><i class="bi bi-box-arrow-left"></i> Keluar</a>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="col-lg-10 offset-lg-2 p-4 p-lg-5 bg-light">
+                
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 fade-in-up" style="animation-delay: 0.1s;">
+                    <div>
+                        <h2 class="fw-bold mb-2" style="letter-spacing: -0.5px;">Selamat Datang, <%= user ? user.username : 'Pelanggan' %>! 👋</h2>
+                        <p class="text-muted fs-5 mb-0">Berikut ringkasan aktivitas akun Anda hari ini.</p>
+                    </div>
+                    <a href="/katalog" class="btn btn-dark rounded-pill px-4 py-3 fw-semibold d-flex align-items-center gap-2 shadow-sm mt-3 mt-md-0 hover-scale transition-all">
+                        <i class="bi bi-cart-plus fs-5"></i> Belanja Sekarang
+                    </a>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4 fade-in-up" style="animation-delay: 0.2s;">
+                        <div class="dashboard-card d-flex align-items-center p-4">
+                            <div class="stat-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-bag-check"></i>
+                            </div>
+                            <div class="ms-4">
+                                <h6 class="text-muted text-uppercase small fw-bold mb-1 ls-1">Total Pesanan</h6>
+                                <h2 class="fw-bold mb-0"><%= typeof stats !== 'undefined' ? stats.totalOrders : 0 %></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 fade-in-up" style="animation-delay: 0.3s;">
+                        <div class="dashboard-card d-flex align-items-center p-4">
+                            <div class="stat-icon bg-warning-subtle text-warning">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <div class="ms-4">
+                                <h6 class="text-muted text-uppercase small fw-bold mb-1 ls-1">Sedang Dikirim</h6>
+                                <h2 class="fw-bold mb-0"><%= typeof stats !== 'undefined' ? stats.shippedOrders : 0 %></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 fade-in-up" style="animation-delay: 0.4s;">
+                        <div class="dashboard-card d-flex align-items-center p-4">
+                            <div class="stat-icon bg-danger-subtle text-danger">
+                                <i class="bi bi-heart"></i>
+                            </div>
+                            <div class="ms-4">
+                                <h6 class="text-muted text-uppercase small fw-bold mb-1 ls-1">Wishlist</h6>
+                                <h2 class="fw-bold mb-0"><%= typeof stats !== 'undefined' ? stats.totalWishlist : 0 %></h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-0 overflow-hidden fade-in-up" style="animation-delay: 0.5s;">
+                    <div class="p-4 px-lg-5 py-4 border-bottom d-flex justify-content-between align-items-center bg-white">
+                        <div>
+                            <h5 class="fw-bold mb-1">Pesanan Terbaru</h5>
+                            <p class="text-muted small mb-0">Transaksi terakhir Anda</p>
+                        </div>
+                        <a href="/pelanggan/pesanan" class="btn btn-sm btn-outline-dark rounded-pill px-4 fw-medium hover-scale transition-all">Lihat Semua</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover mb-0 align-middle">
+                            <thead class="bg-light border-bottom">
+                                <tr>
+                                    <th class="ps-4 ps-lg-5 py-3">ID Pesanan</th>
+                                    <th>Tanggal</th>
+                                    <th>Status</th>
+                                    <th>Total Belanja</th>
+                                    <th class="text-end pe-4 pe-lg-5">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (typeof recentOrders !== 'undefined' && recentOrders.length > 0) { %>
+                                    <% recentOrders.forEach(order => { %>
+                                        <tr>
+                                            <td class="ps-4 ps-lg-5 fw-semibold text-primary">#ORD-<%= order.id %></td>
+                                            <td><%= new Date(order.order_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+                                            <td>
+                                                <% if (order.status === 'Completed') { %>
+                                                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-medium">Selesai</span>
+                                                <% } else if (order.status === 'Shipped') { %>
+                                                    <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill fw-medium">Dikirim</span>
+                                                <% } else if (order.status === 'Cancelled') { %>
+                                                    <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-medium">Dibatalkan</span>
+                                                <% } else { %>
+                                                    <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-medium"><%= order.status %></span>
+                                                <% } %>
+                                            </td>
+                                            <td class="fw-bold">Rp <%= Number(order.total_price).toLocaleString('id-ID') %></td>
+                                            <td class="text-end pe-4 pe-lg-5">
+                                                <a href="/pelanggan/pesanan" class="btn btn-action btn-light text-muted ms-2" data-bs-toggle="tooltip" title="Lihat Detail">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">Belum ada riwayat pesanan.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    </script>
+</body>
+</html>

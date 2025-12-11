@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Pesanan - Admin KURNIA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        
+        /* Sidebar & Layout */
+        .sidebar {
+            background-color: #1a1a1a; color: #fff; min-height: 100vh;
+            display: flex; flex-direction: column; position: relative;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.7); padding: 12px 20px; margin-bottom: 5px;
+            border-radius: 8px; text-decoration: none; display: flex; align-items: center;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--accent-color, #c9a227); color: #fff;
+        }
+        .sidebar .nav-link i { font-size: 1.2rem; margin-right: 15px; width: 20px; text-align: center; }
+        .logo-container { padding: 30px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        
+        .topbar {
+            background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            padding: 15px 30px; border-radius: 15px;
+        }
+        .table-card {
+            background: #fff; border-radius: 16px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        }
+        
+        /* Status Badge Colors */
+        .badge-pending { background-color: #fff3cd; color: #856404; }
+        .badge-processing { background-color: #cce5ff; color: #004085; }
+        .badge-shipped { background-color: #d1ecf1; color: #0c5460; }
+        .badge-completed { background-color: #d4edda; color: #155724; }
+        .badge-cancelled { background-color: #f8d7da; color: #721c24; }
+
+        /* Style Tombol Bukti */
+        .btn-proof {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- SIDEBAR -->
+            <div class="col-lg-2 d-none d-lg-block sidebar">
+                <div class="logo-container">
+                    <h4 class="fw-bold mb-0 ls-1">KURNIA<span style="color: #c9a227;">.</span></h4>
+                    <small class="text-white-50">Admin Panel</small>
+                </div>
+                <nav class="nav flex-column px-3">
+                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-grid-fill"></i> Dashboard</a>
+                    <a class="nav-link" href="/admin/products"><i class="bi bi-box-seam"></i> Produk</a>
+                    <a class="nav-link active" href="/admin/orders"><i class="bi bi-cart-fill"></i> Pesanan</a>
+                </nav>
+                <div class="mt-auto p-3">
+                    <a href="/logout" class="nav-link bg-danger text-white justify-content-center"><i class="bi bi-box-arrow-left me-2"></i> Logout</a>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="col-lg-10 d-flex flex-column min-vh-100">
+                
+                <!-- TOPBAR -->
+                <div class="topbar d-flex justify-content-between align-items-center m-4">
+                    <div class="d-flex align-items-center">
+                        <h5 class="fw-bold mb-0">Daftar Pesanan & Pembayaran</h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-end d-none d-md-block">
+                            <div class="fw-bold small"><%= user ? user.username : 'Admin' %></div>
+                            <div class="text-muted" style="font-size: 10px;">Admin</div>
+                        </div>
+                        <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <%= user ? user.username.substring(0,1).toUpperCase() : 'A' %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABEL PESANAN -->
+                <div class="px-4 pb-4">
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Pelanggan</th>
+                                        <th>Total</th>
+                                        <th>Pembayaran</th>
+                                        <th>Status</th>
+                                        <th style="min-width: 180px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (orders.length > 0) { %>
+                                        <% orders.forEach(order => { %>
+                                            <tr>
+                                                <td class="fw-bold text-primary">#<%= order.id %></td>
+                                                <td>
+                                                    <div class="fw-medium"><%= order.full_name || order.username %></div>
+                                                    <small class="text-muted"><%= new Date(order.order_date).toLocaleDateString('id-ID') %></small>
+                                                </td>
+                                                <td class="fw-bold">Rp <%= Number(order.total_price).toLocaleString('id-ID') %></td>
+                                                
+                                                <!-- Pembayaran & Bukti -->
+                                                <td>
+                                                    <div class="d-flex flex-column align-items-start gap-1">
+                                                        <span class="badge bg-light text-dark border">
+                                                            <%= order.payment_method || 'Manual' %>
+                                                        </span>
+                                                        <% if (order.payment_proof) { %>
+                                                            <button class="btn btn-sm btn-outline-primary btn-proof rounded-pill" 
+                                                                    onclick="showProof('<%= order.payment_proof %>', '<%= order.id %>')">
+                                                                <i class="bi bi-file-earmark-image me-1"></i> Lihat Bukti
+                                                            </button>
+                                                        <% } else { %>
+                                                            <span class="text-muted small fst-italic">Belum upload</span>
+                                                        <% } %>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Status Badge -->
+                                                <td>
+                                                    <% 
+                                                        let badgeClass = 'bg-secondary text-white';
+                                                        if(order.status === 'Pending') badgeClass = 'badge-pending';
+                                                        if(order.status === 'Processing') badgeClass = 'badge-processing';
+                                                        if(order.status === 'Shipped') badgeClass = 'badge-shipped';
+                                                        if(order.status === 'Completed') badgeClass = 'badge-completed';
+                                                        if(order.status === 'Cancelled') badgeClass = 'badge-cancelled';
+                                                    %>
+                                                    <span class="badge <%= badgeClass %> px-3 py-2 rounded-pill">
+                                                        <%= order.status %>
+                                                    </span>
+                                                </td>
+
+                                                <!-- Aksi: Update & Delete -->
+                                                <td>
+                                                    <div class="d-flex gap-2 align-items-center">
+                                                        <!-- Form Update Status -->
+                                                        <form action="/admin/orders/update-status" method="POST" class="d-flex gap-1">
+                                                            <input type="hidden" name="order_id" value="<%= order.id %>">
+                                                            <select name="status" class="form-select form-select-sm" style="width: 110px;">
+                                                                <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                                                <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Process</option>
+                                                                <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                                <option value="Completed" <%= order.status === 'Completed' ? 'selected' : '' %>>Done</option>
+                                                                <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancel</option>
+                                                            </select>
+                                                            <button type="submit" class="btn btn-sm btn-dark" title="Simpan Status">
+                                                                <i class="bi bi-check-lg"></i>
+                                                            </button>
+                                                        </form>
+
+                                                        <!-- Tombol Hapus -->
+                                                        <a href="/admin/orders/delete/<%= order.id %>" 
+                                                           class="btn btn-sm btn-danger" 
+                                                           title="Hapus Pesanan"
+                                                           onclick="return confirm('Yakin ingin menghapus pesanan #<%= order.id %>? Data tidak bisa dikembalikan.');">
+                                                            <i class="bi bi-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center py-5 text-muted">Belum ada pesanan masuk.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BUKTI PEMBAYARAN -->
+    <div class="modal fade" id="proofModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bukti Pembayaran Order <span id="proofOrderId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-0 bg-light">
+                    <img id="proofImage" src="" alt="Bukti Transfer" class="img-fluid" style="max-height: 500px;">
+                </div>
+                <div class="modal-footer">
+                    <a id="downloadLink" href="#" class="btn btn-primary btn-sm" download><i class="bi bi-download me-2"></i> Download</a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showProof(imageUrl, orderId) {
+            const modal = new bootstrap.Modal(document.getElementById('proofModal'));
+            document.getElementById('proofImage').src = imageUrl;
+            document.getElementById('proofOrderId').innerText = '#' + orderId;
+            document.getElementById('downloadLink').href = imageUrl;
+            modal.show();
+        }
+    </script>
+</body>
+</html>

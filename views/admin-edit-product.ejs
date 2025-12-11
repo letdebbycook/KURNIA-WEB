@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Produk - Admin KURNIA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .form-card { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.03); }
+        
+        /* Style untuk kotak preview */
+        .preview-box {
+            width: 100%;
+            height: 150px; /* Tinggi fix agar rapi */
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Gambar tidak gepeng */
+        }
+        .preview-label {
+            position: absolute;
+            font-size: 0.8rem;
+            color: #adb5bd;
+            pointer-events: none;
+        }
+        /* Sembunyikan label jika ada gambar */
+        .preview-box img[src]:not([src=""]) + .preview-label {
+            display: none;
+        }
+        
+        /* Ukuran khusus untuk preview kecil (View 2,3,4) */
+        .preview-box-sm {
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold mb-1">Edit Produk</h3>
+                        <p class="text-muted mb-0">Perbarui informasi dan gambar produk.</p>
+                    </div>
+                    <a href="/admin/products" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-2"></i> Kembali
+                    </a>
+                </div>
+
+                <div class="form-card">
+                    <!-- Form Edit dengan Enctype Multipart -->
+                    <form action="/admin/products/edit/<%= product.id %>" method="POST" enctype="multipart/form-data">
+                        
+                        <div class="row g-4">
+                            <!-- KOLOM KIRI: INFORMASI PRODUK -->
+                            <div class="col-md-7">
+                                <h6 class="fw-bold text-uppercase text-muted small mb-3">Informasi Dasar</h6>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Nama Produk</label>
+                                    <input type="text" class="form-control bg-light border-0 py-2" name="name" value="<%= product.name %>" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Kategori</label>
+                                    <select class="form-select bg-light border-0 py-2" name="category">
+                                        <option value="Katun" <%= product.category === 'Katun' ? 'selected' : '' %>>Katun</option>
+                                        <option value="Rayon" <%= product.category === 'Rayon' ? 'selected' : '' %>>Rayon</option>
+                                        <option value="Silk" <%= product.category === 'Silk' ? 'selected' : '' %>>Silk / Sutra</option>
+                                        <option value="Polyester" <%= product.category === 'Polyester' ? 'selected' : '' %>>Polyester</option>
+                                        <option value="Spandex" <%= product.category === 'Spandex' ? 'selected' : '' %>>Spandex</option>
+                                        <option value="Linen" <%= product.category === 'Linen' ? 'selected' : '' %>>Linen</option>
+                                        <option value="Lainnya" <%= product.category === 'Lainnya' ? 'selected' : '' %>>Lainnya</option>
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-medium">Harga (Rp)</label>
+                                        <input type="number" class="form-control bg-light border-0 py-2" name="price" value="<%= product.price %>" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-medium">Stok</label>
+                                        <input type="number" class="form-control bg-light border-0 py-2" name="stock" value="<%= product.stock %>" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Deskripsi</label>
+                                    <textarea class="form-control bg-light border-0" name="description" rows="5" required><%= product.description %></textarea>
+                                </div>
+                            </div>
+
+                            <!-- KOLOM KANAN: UPLOAD GAMBAR (MULTI IMAGE) -->
+                            <div class="col-md-5">
+                                <h6 class="fw-bold text-uppercase text-muted small mb-3">Galeri Produk</h6>
+                                <div class="alert alert-info small py-2"><i class="bi bi-info-circle me-1"></i> Klik "Choose File" untuk mengganti gambar lama.</div>
+                                
+                                <!-- GAMBAR UTAMA -->
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Gambar Utama</label>
+                                    <!-- Tampilkan gambar lama jika ada -->
+                                    <div class="preview-box">
+                                        <img id="prev1" src="<%= product.image_url || '' %>" style="<%= product.image_url ? '' : 'display:none;' %>">
+                                        <% if(!product.image_url) { %><span class="preview-label" id="lbl1">Kosong</span><% } %>
+                                    </div>
+                                    <input type="file" class="form-control form-control-sm" name="image" accept="image/*" onchange="preview(this, 'prev1', 'lbl1')">
+                                </div>
+
+                                <!-- GRID GAMBAR TAMBAHAN (View 2, 3, 4) -->
+                                <div class="row g-2">
+                                    <!-- View 2 -->
+                                    <div class="col-4">
+                                        <label class="form-label small text-muted text-center d-block">View 2</label>
+                                        <div class="preview-box preview-box-sm">
+                                            <img id="prev2" src="<%= product.image_url_2 || '' %>" style="<%= product.image_url_2 ? '' : 'display:none;' %>">
+                                            <% if(!product.image_url_2) { %><span class="preview-label" id="lbl2">+</span><% } %>
+                                        </div>
+                                        <input type="file" class="form-control form-control-sm px-1" name="image2" accept="image/*" onchange="preview(this, 'prev2', 'lbl2')">
+                                    </div>
+                                    
+                                    <!-- View 3 -->
+                                    <div class="col-4">
+                                        <label class="form-label small text-muted text-center d-block">View 3</label>
+                                        <div class="preview-box preview-box-sm">
+                                            <img id="prev3" src="<%= product.image_url_3 || '' %>" style="<%= product.image_url_3 ? '' : 'display:none;' %>">
+                                            <% if(!product.image_url_3) { %><span class="preview-label" id="lbl3">+</span><% } %>
+                                        </div>
+                                        <input type="file" class="form-control form-control-sm px-1" name="image3" accept="image/*" onchange="preview(this, 'prev3', 'lbl3')">
+                                    </div>
+                                    
+                                    <!-- View 4 -->
+                                    <div class="col-4">
+                                        <label class="form-label small text-muted text-center d-block">View 4</label>
+                                        <div class="preview-box preview-box-sm">
+                                            <img id="prev4" src="<%= product.image_url_4 || '' %>" style="<%= product.image_url_4 ? '' : 'display:none;' %>">
+                                            <% if(!product.image_url_4) { %><span class="preview-label" id="lbl4">+</span><% } %>
+                                        </div>
+                                        <input type="file" class="form-control form-control-sm px-1" name="image4" accept="image/*" onchange="preview(this, 'prev4', 'lbl4')">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/admin/products" class="btn btn-light rounded-pill px-4">Batal</a>
+                            <button type="submit" class="btn btn-warning text-white btn-lg rounded-pill fw-bold px-5">Simpan Perubahan</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript untuk Preview Gambar Real-time -->
+    <script>
+        function preview(input, imgId, lblId) {
+            const file = input.files[0];
+            const imgEl = document.getElementById(imgId);
+            const lblEl = document.getElementById(lblId);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgEl.src = e.target.result;
+                    imgEl.style.display = 'block';
+                    if(lblEl) lblEl.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>

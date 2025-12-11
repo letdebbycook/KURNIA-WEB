@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.name %> - KURNIA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f8f9fa; padding-top: 76px; overflow-x: hidden; }
+        
+        /* Animasi Fade-in */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* Galeri Gambar Interaktif */
+        .product-gallery-main {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background-color: #fff;
+            position: relative;
+            aspect-ratio: 1 / 1; /* Kotak Presisi */
+        }
+        .product-gallery-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Memenuhi kotak tanpa gepeng */
+            transition: opacity 0.3s ease;
+        }
+        
+        .thumbnail-list {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            overflow-x: auto; /* Scroll jika gambar banyak */
+            padding-bottom: 5px;
+        }
+        /* Sembunyikan scrollbar tapi tetap bisa discroll */
+        .thumbnail-list::-webkit-scrollbar { height: 4px; }
+        .thumbnail-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+        .thumbnail-item {
+            width: 70px;
+            height: 70px;
+            min-width: 70px; /* Mencegah penyusutan */
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            opacity: 0.6;
+            background-color: #fff;
+        }
+        .thumbnail-item:hover, .thumbnail-item.active {
+            opacity: 1;
+            border-color: var(--accent-color, #c9a227);
+            transform: translateY(-2px);
+        }
+
+        /* Detail Card */
+        .product-details {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        .product-badge {
+            background-color: var(--accent-color, #c9a227);
+            color: #fff;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Pemilih Kuantitas Interaktif */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-radius: 50px;
+            padding: 5px;
+            border: 1px solid #eee;
+        }
+        .quantity-selector .btn {
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            font-weight: 600;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .quantity-selector .btn:hover:not(:disabled) {
+            background-color: var(--primary-color, #2c3e50);
+            color: #fff;
+            border-color: var(--primary-color, #2c3e50);
+        }
+        .quantity-selector .form-control {
+            width: 50px;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            margin: 0 5px;
+        }
+        /* Sembunyikan panah default input number */
+        .quantity-selector input[type=number]::-webkit-inner-spin-button, 
+        .quantity-selector input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
+        }
+        .quantity-selector input[type=number] { -moz-appearance: textfield; }
+
+        /* Style Tab */
+        .nav-tabs { border-bottom: 2px solid #f0f0f0; }
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #888;
+            font-weight: 500;
+            padding: 10px 20px;
+            margin-bottom: -2px;
+        }
+        .nav-tabs .nav-link:hover { color: #333; }
+        .nav-tabs .nav-link.active {
+            border-bottom-color: var(--accent-color, #c9a227);
+            color: var(--primary-color, #1a1a1a);
+            background: none;
+        }
+        
+        /* Tombol Beli */
+        .btn-buy {
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        .btn-buy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR (Otomatis ada ikon keranjang) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 border-bottom fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center fs-4" href="/">
+                KURNIA<span style="color: var(--accent-color, #c9a227);">.</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#katalogNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="katalogNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-medium" href="/katalog">Katalog</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <a href="/keranjang" class="nav-link position-relative me-3">
+                        <i class="bi bi-cart-fill fs-5"></i>
+                        <% if (cartCount > 0) { %>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 10px;"><%= cartCount %></span>
+                        <% } %>
+                    </a>
+                    <% if (user) { %>
+                        <a href="/pelanggan/dashboard" class="btn btn-dark rounded-pill px-4 btn-sm py-2"><i class="bi bi-person-circle me-2"></i> Akun</a>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-outline-dark rounded-pill px-4 btn-sm py-2">Login</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- KONTEN DETAIL PRODUK -->
+    <div class="container my-5 py-5">
+        
+        <!-- Breadcrumb / Tombol Kembali -->
+        <div class="mb-4 fade-in-up" style="animation-delay: 0s;">
+            <a href="/katalog" class="text-decoration-none text-muted small fw-medium hover-underline">
+                <i class="bi bi-arrow-left me-1"></i> Kembali ke Katalog
+            </a>
+        </div>
+
+        <div class="row g-5">
+            
+            <!-- KOLOM KIRI: GALERI GAMBAR -->
+            <div class="col-lg-6 fade-in-up" style="animation-delay: 0.1s;">
+                
+                <!-- Gambar Utama Besar -->
+                <div class="product-gallery-main mb-3">
+                    <!-- Jika ada gambar, tampilkan. Jika tidak, pakai placeholder -->
+                    <img src="<%= product.image_url || 'https://placehold.co/600?text=No+Image' %>" alt="<%= product.name %>" id="mainImage">
+                </div>
+                
+                <!-- Daftar Thumbnail (Hanya muncul jika ada gambar) -->
+                <div class="thumbnail-list">
+                    <!-- Thumb 1 (Gambar Utama) -->
+                    <% if(product.image_url) { %>
+                        <img src="<%= product.image_url %>" class="thumbnail-item active" onclick="changeImage(this.src, this)">
+                    <% } %>
+                    
+                    <!-- Thumb 2 -->
+                    <% if(product.image_url_2) { %>
+                        <img src="<%= product.image_url_2 %>" class="thumbnail-item" onclick="changeImage(this.src, this)">
+                    <% } %>
+
+                    <!-- Thumb 3 -->
+                    <% if(product.image_url_3) { %>
+                        <img src="<%= product.image_url_3 %>" class="thumbnail-item" onclick="changeImage(this.src, this)">
+                    <% } %>
+
+                    <!-- Thumb 4 -->
+                    <% if(product.image_url_4) { %>
+                        <img src="<%= product.image_url_4 %>" class="thumbnail-item" onclick="changeImage(this.src, this)">
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: DETAIL INFORMASI -->
+            <div class="col-lg-6 fade-in-up" style="animation-delay: 0.2s;">
+                <div class="product-details d-flex flex-column">
+                    
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="product-badge"><%= product.category || 'Umum' %></span>
+                            
+                            <!-- Status Stok -->
+                            <% if (product.stock > 10) { %>
+                                <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Stok Tersedia</span>
+                            <% } else if (product.stock > 0) { %>
+                                <span class="text-warning small fw-bold"><i class="bi bi-exclamation-circle-fill me-1"></i> Stok Menipis (<%= product.stock %>)</span>
+                            <% } else { %>
+                                <span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill me-1"></i> Stok Habis</span>
+                            <% } %>
+                        </div>
+
+                        <h1 class="display-5 fw-bold mb-3" style="letter-spacing: -1px;"><%= product.name %></h1>
+                        
+                        <div class="fs-2 fw-light text-primary mb-4">
+                            Rp <%= Number(product.price).toLocaleString('id-ID') %>
+                            <span class="fs-6 text-muted">/ unit</span>
+                        </div>
+                    </div>
+                    
+                    <hr class="opacity-10 my-2">
+
+                    <!-- Tab Deskripsi & Spesifikasi -->
+                    <div class="mt-3 mb-4">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="deskripsi-tab" data-bs-toggle="tab" data-bs-target="#deskripsi" type="button">Deskripsi</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="spesifikasi-tab" data-bs-toggle="tab" data-bs-target="#spesifikasi" type="button">Spesifikasi</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content py-4" id="myTabContent" style="min-height: 100px;">
+                            <div class="tab-pane fade show active" id="deskripsi" role="tabpanel">
+                                <p class="text-muted lh-lg"><%= product.description || 'Tidak ada deskripsi untuk produk ini.' %></p>
+                            </div>
+                            <div class="tab-pane fade" id="spesifikasi" role="tabpanel">
+                                <table class="table table-sm table-borderless text-muted w-auto">
+                                    <tbody>
+                                        <tr><td class="fw-medium pe-4">Kategori</td><td>: <%= product.category %></td></tr>
+                                        <tr><td class="fw-medium pe-4">Stok Aktual</td><td>: <%= product.stock %> Unit</td></tr>
+                                        <tr><td class="fw-medium pe-4">Kondisi</td><td>: Baru</td></tr>
+                                        <!-- Bisa ditambah data lain dari DB jika ada -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- FORM PEMBELIAN (STICKY BOTTOM DI MOBILE) -->
+                    <form action="/keranjang/tambah" method="POST" class="mt-auto">
+                        <input type="hidden" name="product_id" value="<%= product.id %>">
+
+                        <div class="row align-items-end g-3">
+                            <div class="col-auto">
+                                <label class="form-label fw-bold small text-muted mb-2">Kuantitas</label>
+                                <!-- Pemilih Kuantitas -->
+                                <div class="quantity-selector">
+                                    <button type="button" class="btn btn-minus" <%= product.stock <= 0 ? 'disabled' : '' %>><i class="bi bi-dash"></i></button>
+                                    <input type="number" class="form-control" name="quantity" value="1" min="1" max="<%= product.stock %>" id="quantityInput" <%= product.stock <= 0 ? 'disabled' : '' %>>
+                                    <button type="button" class="btn btn-plus" <%= product.stock <= 0 ? 'disabled' : '' %>><i class="bi bi-plus"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="col">
+                                <!-- Tombol Aksi -->
+                                <% if (user) { %>
+                                    <% if (product.stock > 0) { %>
+                                        <button type="submit" class="btn btn-dark w-100 rounded-pill py-3 fw-bold btn-buy shadow">
+                                            <i class="bi bi-bag-plus-fill me-2"></i> Tambah Keranjang
+                                        </button>
+                                    <% } else { %>
+                                        <button type="button" class="btn btn-secondary w-100 rounded-pill py-3 fw-bold disabled" disabled>
+                                            Stok Habis
+                                        </button>
+                                    <% } %>
+                                <% } else { %>
+                                    <a href="/login" class="btn btn-dark w-100 rounded-pill py-3 fw-bold btn-buy shadow">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i> Login untuk Beli
+                                    </a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript Interaktif -->
+    <script>
+        // 1. Logika Galeri Gambar
+        const mainImage = document.getElementById('mainImage');
+        
+        function changeImage(src, element) {
+            // Efek transisi halus
+            mainImage.style.opacity = 0;
+            
+            setTimeout(() => {
+                mainImage.src = src;
+                mainImage.style.opacity = 1;
+            }, 200);
+            
+            // Hapus class active dari semua thumb, tambah ke yang diklik
+            document.querySelectorAll('.thumbnail-item').forEach(thumb => thumb.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // 2. Logika Kuantitas (+/-)
+        const qtyInput = document.getElementById('quantityInput');
+        const btnPlus = document.querySelector('.btn-plus');
+        const btnMinus = document.querySelector('.btn-minus');
+        const maxStock = parseInt(qtyInput ? qtyInput.max : 0);
+
+        if (qtyInput) {
+            btnPlus.addEventListener('click', () => {
+                let currentVal = parseInt(qtyInput.value) || 0;
+                if (currentVal < maxStock) qtyInput.value = currentVal + 1;
+            });
+
+            btnMinus.addEventListener('click', () => {
+                let currentVal = parseInt(qtyInput.value) || 0;
+                if (currentVal > 1) qtyInput.value = currentVal - 1;
+            });
+
+            // Validasi manual input
+            qtyInput.addEventListener('change', () => {
+                let val = parseInt(qtyInput.value);
+                if (val > maxStock) qtyInput.value = maxStock;
+                if (val < 1) qtyInput.value = 1;
+            });
+        }
+    </script>
+</body>
+</html>

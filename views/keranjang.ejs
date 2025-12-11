@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang Belanja - KURNIA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .cart-item-img {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+        
+        /* Pemilih Kuantitas Interaktif */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+        }
+        .quantity-selector .btn {
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            font-weight: 600;
+            background-color: #f0f0f0;
+            border: none;
+            color: #333;
+        }
+        .quantity-selector .btn:hover {
+            background-color: #ddd;
+        }
+        .quantity-selector .form-control {
+            width: 50px;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+        }
+        .quantity-selector input[type=number]::-webkit-inner-spin-button, 
+        .quantity-selector input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
+        }
+        .quantity-selector input[type=number] { -moz-appearance: textfield; }
+
+        /* Kartu Summary yang Sticky */
+        .summary-card.sticky-top {
+            top: 100px; /* Jarak dari navbar (76px) + margin atas */
+            z-index: 100;
+        }
+
+        /* Tombol Beli (Sama seperti detail produk) */
+        .btn-buy {
+            transition: all 0.3s ease;
+        }
+        .btn-buy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-light" style="padding-top: 76px;">
+
+    <!-- NAVBAR (Otomatis ada ikon keranjang) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-3 border-bottom fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center fs-4" href="/">
+                KURNIA<span style="color: var(--accent-color, #c9a227);">.</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#katalogNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="katalogNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/katalog">Katalog</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <!-- Ikon Keranjang dari Middleware -->
+                    <a href="/keranjang" class="nav-link position-relative me-3">
+                        <i class="bi bi-cart-fill fs-5"></i>
+                        <% if (cartCount > 0) { %>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
+                                <%= cartCount %>
+                            </span>
+                        <% } %>
+                    </a>
+                    <!-- Tombol Akun -->
+                    <% if (user) { %>
+                        <a href="/pelanggan/dashboard" class="btn btn-dark rounded-pill px-4 btn-sm py-2">
+                            <i class="bi bi-person-circle me-2"></i> Akun
+                        </a>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-outline-dark rounded-pill px-4 btn-sm py-2">Login</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- KONTEN KERANJANG -->
+    <div class="container my-5 py-5">
+        <h2 class="fw-bold mb-4">Keranjang Belanja Saya</h2>
+
+        <% if (cartItems.length > 0) { %>
+        <div class="row g-5">
+            <!-- Kolom Kiri: Daftar Item -->
+            <div class="col-lg-8">
+                <div class="bg-white p-4 p-lg-5 rounded-3 shadow-sm">
+                    <% cartItems.forEach((item, index) => { %>
+                    <div class="row g-3 align-items-center py-3 <%= index > 0 ? 'border-top' : '' %>">
+                        <div class="col-3 col-md-2">
+                            <img src="<%= item.image_url %>" alt="<%= item.name %>" class="cart-item-img">
+                        </div>
+                        <div class="col-9 col-md-4">
+                            <h6 class="fw-bold mb-0 text-truncate"><%= item.name %></h6>
+                            <small class="text-muted">Rp <%= Number(item.price).toLocaleString('id-ID') %></small>
+                            <a href="/keranjang/hapus/<%= item.cart_item_id %>" class="text-danger small d-block d-md-none mt-2" onclick="return confirm('Hapus item ini?');">Hapus</a>
+                        </div>
+                        <div class="col-7 col-md-3">
+                            <!-- Form untuk Update Kuantitas (DIPERCANTIK) -->
+                            <form action="/keranjang/update/<%= item.cart_item_id %>" method="POST">
+                                <div class="quantity-selector input-group">
+                                    <button type="button" class="btn btn-minus">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </button>
+                                    <input type="number" name="quantity" class="form-control qty-input" value="<%= item.quantity %>" min="1" max="<%= item.stock %>" onchange="this.form.submit()">
+                                    <button type="button" class="btn btn-plus">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-4 col-md-2 text-end">
+                            <span class="fw-bold">Rp <%= Number(item.price * item.quantity).toLocaleString('id-ID') %></span>
+                        </div>
+                        <div class="col-1 col-md-1 text-end d-none d-md-block">
+                            <a href="/keranjang/hapus/<%= item.cart_item_id %>" class="btn btn-sm btn-outline-danger border-0" data-bs-toggle="tooltip" title="Hapus Item" onclick="return confirm('Hapus item ini dari keranjang?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <% }); %>
+                    <hr class="my-4">
+                    <a href="/katalog" class="text-dark fw-medium text-decoration-none">
+                        <i class="bi bi-arrow-left me-2"></i> Lanjut Belanja
+                    </a>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Ringkasan Pesanan (DIPERCANTIK) -->
+            <div class="col-lg-4">
+                <div class="bg-white p-4 p-lg-5 rounded-3 shadow-sm summary-card sticky-top">
+                    <h5 class="fw-bold mb-4">Ringkasan Pesanan</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span class="text-muted">Subtotal (<%= cartCount %> item)</span>
+                            <span class="fw-medium">Rp <%= Number(subtotal).toLocaleString('id-ID') %></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span class="text-muted">Ongkos Kirim</span>
+                            <span class="fw-medium">KONFIRMASI WHATSAPP</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-top pt-3 mt-3">
+                            <span class="fs-5 fw-bold">Total Harga</span>
+                            <span class="fs-5 fw-bold text-primary">Rp <%= Number(total).toLocaleString('id-ID') %></span>
+                        </li>
+                    </ul>
+                    <div class="d-grid mt-4">
+                        <a href="/checkout" class="btn btn-dark btn-lg rounded-pill py-3 fw-bold btn-buy">
+                            Lanjut ke Checkout <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } else { %>
+            <!-- Tampilan Keranjang Kosong (DIPERCANTIK) -->
+            <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+                <i class="bi bi-cart-x display-1 text-muted opacity-25 mb-4 d-block"></i>
+                <h3 class="fw-bold mb-3">Keranjang Anda Kosong</h3>
+                <p class="text-muted mb-4">Ayo, temukan kain impian Anda di katalog kami!</p>
+                <a href="/katalog" class="btn btn-dark rounded-pill px-5 py-2 mt-3 fw-medium">
+                    <i class="bi bi-shop me-2"></i> Mulai Belanja
+                </a>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Aktifkan Tooltip
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+        // Logika Tombol Kuantitas +/-
+        document.querySelectorAll('.quantity-selector').forEach(selector => {
+            const qtyInput = selector.querySelector('.qty-input');
+            const btnPlus = selector.querySelector('.btn-plus');
+            const btnMinus = selector.querySelector('.btn-minus');
+            const maxStock = parseInt(qtyInput.max);
+
+            btnPlus.addEventListener('click', () => {
+                let currentVal = parseInt(qtyInput.value);
+                if (currentVal < maxStock) {
+                    qtyInput.value = currentVal + 1;
+                    // Submit form secara otomatis
+                    qtyInput.form.submit();
+                }
+            });
+
+            btnMinus.addEventListener('click', () => {
+                let currentVal = parseInt(qtyInput.value);
+                if (currentVal > 1) {
+                    qtyInput.value = currentVal - 1;
+                    // Submit form secara otomatis
+                    qtyInput.form.submit();
+                } else if (currentVal === 1) {
+                    // Jika 1 lalu dikurangi, konfirmasi hapus
+                    if (confirm('Kuantitas 0 akan menghapus item. Lanjutkan?')) {
+                        qtyInput.value = 0;
+                        qtyInput.form.submit();
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

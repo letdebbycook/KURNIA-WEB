@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - KURNIA</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR SEDERHANA (Opsional, agar user bisa kembali ke home) -->
+    <nav class="navbar navbar-expand-lg fixed-top bg-white shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/" style="letter-spacing: 1px;">KURNIA<span style="color: var(--accent-color);">.</span></a>
+            <a href="/" class="btn btn-outline-dark rounded-pill px-4 ms-auto fw-medium btn-sm">
+                <i class="bi bi-arrow-left me-2"></i> Kembali
+            </a>
+        </div>
+    </nav>
+
+    <!-- MAIN LOGIN CONTAINER -->
+    <div class="container-fluid min-vh-100 d-flex align-items-center bg-light" style="padding-top: 80px;">
+        <div class="row w-100 mx-0 justify-content-center">
+            
+            <!-- KARTU LOGIN UTAMA -->
+            <div class="col-lg-10 col-xl-9 p-0 shadow-lg bg-white rounded-4 overflow-hidden login-card-animation">
+                <div class="row g-0 min-vh-75">
+                    
+                    <!-- BAGIAN KIRI: GAMBAR / BANNER -->
+                    <div class="col-md-6 d-none d-md-block position-relative">
+                        <!-- Ganti URL gambar ini dengan gambar toko/kain yang estetik -->
+                        <img src="https://plus.unsplash.com/premium_photo-1674747086515-5fa9f1363978?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dGV4dGlsZXxlbnwwfHwwfHx8MA%3D%3D" 
+                             alt="Login Banner" 
+                             class="w-100 h-100 object-fit-cover position-absolute top-0 start-0"
+                             style="filter: brightness(0.7);">
+                        
+                        <div class="position-absolute top-50 start-50 translate-middle text-center text-white w-75 p-4" style="background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); border-radius: 16px;">
+                            <h2 class="fw-bold mb-3">Selamat Datang Kembali</h2>
+                            <p class="lead mb-0 fs-6 opacity-75">Masuk untuk mengakses koleksi kain premium eksklusif dan penawaran spesial hanya untuk member.</p>
+                        </div>
+                    </div>
+
+                    <!-- BAGIAN KANAN: FORM LOGIN -->
+                    <div class="col-md-6 py-5 px-4 px-sm-5 d-flex align-items-center">
+                        <div class="w-100">
+                            <div class="text-center mb-5">
+                                <h3 class="fw-bold mb-2">Login Akun</h3>
+                                <p class="text-muted">Silakan masukkan kredensial Anda</p>
+                            </div>
+
+                            <!-- ALERT ERROR (Jika ada error dari server) -->
+                            <div class="alert alert-danger d-flex align-items-center p-2 mb-4 rounded-3 d-none" id="loginError">
+                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                <div>Username atau password salah.</div>
+                            </div>
+
+                            <!-- FORM -->
+                            <!-- Tambahkan ID pada form untuk memudahkan seleksi JS -->
+                            <form action="/login" method="POST" id="loginForm">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control rounded-3 border-0 bg-light ps-4" id="username" name="username" placeholder="Username" required>
+                                    <label for="username" class="text-muted ps-4">Username</label>
+                                </div>
+                                <div class="form-floating mb-4">
+                                    <input type="password" class="form-control rounded-3 border-0 bg-light ps-4" id="password" name="password" placeholder="Password" required>
+                                    <label for="password" class="text-muted ps-4">Password</label>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input bg-secondary border-0" type="checkbox" value="" id="rememberMe">
+                                        <label class="form-check-label small text-muted" for="rememberMe">
+                                            Ingat Saya
+                                        </label>
+                                    </div>
+                                    <a href="/forgot-password" class="small text-decoration-none fw-semibold" style="color: var(--accent-color);">Lupa Password?</a>
+                                </div>
+
+                                <button type="submit" class="btn btn-dark btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm btn-login-hover">
+                                    MASUK SEKARANG <i class="bi bi-arrow-right ms-2"></i>
+                                </button>
+
+                                <div class="text-center mt-5 text-muted">
+                                    Belum punya akun? 
+                                    <a href="/register" class="fw-bold text-dark text-decoration-none ms-1 border-bottom border-dark">Daftar Disini</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Script Logika -->
+    <script>
+        // 1. Handle Error Message dari URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            document.getElementById('loginError').classList.remove('d-none');
+        }
+
+        // 2. LOGIKA "INGAT SAYA" (REMEMBER ME)
+        document.addEventListener("DOMContentLoaded", function() {
+            const usernameInput = document.getElementById("username");
+            const rememberCheckbox = document.getElementById("rememberMe");
+            const loginForm = document.getElementById("loginForm");
+
+            // A. Cek LocalStorage saat halaman dimuat
+            const savedUsername = localStorage.getItem("kurnia_saved_username");
+            if (savedUsername) {
+                usernameInput.value = savedUsername;
+                rememberCheckbox.checked = true;
+            }
+
+            // B. Simpan ke LocalStorage saat form disubmit
+            loginForm.addEventListener("submit", function() {
+                if (rememberCheckbox.checked) {
+                    // Jika dicentang, simpan username
+                    localStorage.setItem("kurnia_saved_username", usernameInput.value);
+                } else {
+                    // Jika tidak dicentang, hapus username dari memori
+                    localStorage.removeItem("kurnia_saved_username");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

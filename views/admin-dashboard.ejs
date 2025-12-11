@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - KURNIA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: #1a1a1a; color: #fff; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.7); padding: 12px 20px; margin-bottom: 5px;
+            border-radius: 8px; display: flex; align-items: center; text-decoration: none;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--accent-color, #c9a227); color: #fff;
+        }
+        .sidebar .nav-link i { font-size: 1.2rem; margin-right: 15px; width: 20px; text-align: center; }
+        .logo-container { padding: 30px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        
+        /* Content */
+        .topbar {
+            background-color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            padding: 15px 30px; border-radius: 15px;
+        }
+        .stat-card {
+            background: #fff; border-radius: 16px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03); height: 100%; transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .icon-box {
+            width: 50px; height: 50px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-right: 15px;
+        }
+        
+        .bg-blue-light { background-color: #e3f2fd; color: #1976d2; }
+        .bg-green-light { background-color: #e8f5e9; color: #2e7d32; }
+        .bg-orange-light { background-color: #fff3e0; color: #ef6c00; }
+
+        /* Chart */
+        .chart-container {
+            height: 300px;
+            background: linear-gradient(180deg, rgba(201, 162, 39, 0.1) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 0 0 16px 16px;
+            position: relative; overflow: hidden;
+        }
+        .graph-line {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" preserveAspectRatio="none"><path d="M0,250 C150,150 350,280 500,100 C650,-50 850,200 1000,50 V300 H0 Z" fill="%23c9a227" fill-opacity="0.2" stroke="%23c9a227" stroke-width="3"/></svg>');
+            background-size: cover; background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            
+            <!-- SIDEBAR -->
+            <div class="col-lg-2 d-none d-lg-block sidebar">
+                <div class="logo-container">
+                    <h4 class="fw-bold mb-0 ls-1">KURNIA<span style="color: #c9a227;">.</span></h4>
+                    <small class="text-white-50">Admin Panel</small>
+                </div>
+                <nav class="nav flex-column px-3">
+                    <a class="nav-link active" href="/admin/dashboard"><i class="bi bi-grid-fill"></i> Dashboard</a>
+                    <a class="nav-link" href="/admin/products"><i class="bi bi-box-seam"></i> Produk</a>
+                    <a class="nav-link" href="/admin/orders"><i class="bi bi-cart-fill"></i> Pesanan</a>
+                </nav>
+                <div class="mt-auto p-3">
+                    <a href="/logout" class="btn btn-danger w-100 rounded-3 py-2"><i class="bi bi-box-arrow-left me-2"></i> Logout</a>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="col-lg-10 d-flex flex-column min-vh-100">
+                
+                <!-- TOPBAR -->
+                <div class="topbar d-flex justify-content-between align-items-center m-4">
+                    <h5 class="fw-bold mb-0">Ringkasan Bisnis</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-end d-none d-md-block">
+                            <div class="fw-bold small"><%= user ? user.username : 'Admin' %></div>
+                            <div class="text-muted" style="font-size: 10px;">Super Admin</div>
+                        </div>
+                        <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                            <%= user ? user.username.substring(0,1).toUpperCase() : 'A' %>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4 pb-4">
+                    
+                    <!-- KARTU STATISTIK (DATA REAL) -->
+                    <div class="row g-4 mb-4">
+                        <!-- Transaksi Selesai -->
+                        <div class="col-md-4">
+                            <div class="stat-card d-flex align-items-center">
+                                <div class="icon-box bg-blue-light">
+                                    <i class="bi bi-bag-check-fill"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0"><%= stats.salesCount %></h3>
+                                    <small class="text-muted">Transaksi Selesai</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Total Pendapatan -->
+                        <div class="col-md-4">
+                            <div class="stat-card d-flex align-items-center">
+                                <div class="icon-box bg-green-light">
+                                    <i class="bi bi-cash-stack"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0">Rp <%= Number(stats.revenue).toLocaleString('id-ID') %></h3>
+                                    <small class="text-muted">Total Pendapatan (Omset)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Profit (Asumsi 30%) -->
+                        <div class="col-md-4">
+                            <div class="stat-card d-flex align-items-center">
+                                <div class="icon-box bg-orange-light">
+                                    <i class="bi bi-graph-up-arrow"></i>
+                                </div>
+                                <div>
+                                    <h3 class="fw-bold mb-0">Rp <%= Number(stats.profit).toLocaleString('id-ID') %></h3>
+                                    <small class="text-muted">Estimasi Profit (30%)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHART SECTION (COL-12 FULL WIDTH) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="stat-card p-0 overflow-hidden">
+                                <div class="p-4 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">Tren Penjualan</h5>
+                                        <p class="text-muted small mb-0">Grafik performa penjualan (Visualisasi)</p>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <div class="graph-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRODUK TERLARIS (COL-12 FULL WIDTH) -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="stat-card p-0">
+                                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0">Produk Terlaris</h5>
+                                    <span class="badge bg-success-subtle text-success">Berdasarkan Pesanan Selesai</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th class="ps-4" style="width: 50px;">No</th>
+                                                <th>Nama Produk</th>
+                                                <th>Harga Satuan</th>
+                                                <th>Total Terjual</th>
+                                                <th>Sisa Stok</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (topProducts && topProducts.length > 0) { %>
+                                                <% topProducts.forEach((product, index) => { %>
+                                                    <tr>
+                                                        <td class="ps-4 fw-bold"><%= index + 1 %></td>
+                                                        <td>
+                                                            <span class="fw-medium text-dark"><%= product.name %></span>
+                                                        </td>
+                                                        <td>Rp <%= Number(product.price).toLocaleString('id-ID') %></td>
+                                                        <td>
+                                                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3">
+                                                                <%= product.total_sold %> Unit
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <% if (product.stock < 10) { %>
+                                                                <span class="text-danger fw-bold"><%= product.stock %> (Low)</span>
+                                                            <% } else { %>
+                                                                <span class="text-success"><%= product.stock %> (Aman)</span>
+                                                            <% } %>
+                                                        </td>
+                                                    </tr>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4 text-muted">Belum ada data penjualan selesai.</td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

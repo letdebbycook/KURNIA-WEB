@@ -1,0 +1,145 @@
+/* --- GLOBAL --- */
+:root {
+    --primary-color: #2c3e50; /* Warna biru gelap elegan */
+    --accent-color: #e67e22;  /* Warna oranye untuk aksen/tombol */
+    --bg-light: #f8f9fa;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--primary-color);
+}
+
+/* --- NAVBAR --- */
+.navbar {
+    transition: all 0.3s ease-in-out;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+/* Saat discroll, navbar sedikit mengecil dan ada shadow */
+.navbar.scrolled {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--primary-color) !important;
+    position: relative;
+}
+
+/* Efek garis bawah saat hover menu navbar */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: var(--accent-color);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 80%;
+}
+
+/* --- HERO SECTION --- */
+.hero-section {
+    /* Ganti URL ini dengan gambar banner toko kain Anda */
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    height: 85vh; /* Tinggi hero section */
+    margin-top: -76px; /* Agar navbar transparan di atas hero */
+    padding-top: 76px;
+}
+
+.hero-title {
+    letter-spacing: -1px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* --- PRODUCT CARD INTERACTIVE --- */
+.product-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Saat hover, kartu naik sedikit dan bayangan menebal */
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+}
+
+.product-img-wrap {
+    position: relative;
+    /* Membuat rasio gambar persegi (1:1) agar seragam */
+    aspect-ratio: 1 / 1; 
+}
+
+.product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Gambar memenuhi kotak tanpa gepeng */
+    transition: transform 0.5s ease;
+}
+
+/* Zoom efek pada gambar saat hover */
+.product-card:hover .product-img {
+    transform: scale(1.08);
+}
+
+/* Tombol aksi (Quick view, Add to cart) yang muncul dari bawah */
+.product-actions {
+    transform: translateY(100%); /* Sembunyi di bawah */
+    transition: transform 0.3s ease-in-out;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+}
+
+.product-card:hover .product-actions {
+    transform: translateY(0); /* Muncul saat hover */
+}
+
+.product-actions .btn {
+    transition: all 0.2s;
+}
+.product-actions .btn:hover {
+    transform: scale(1.1);
+}
+
+.product-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Batasi deskripsi hanya 2 baris */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+/* --- UTILITY --- */
+.ls-2 { letter-spacing: 2px; }
+.divider { height: 3px; width: 60px; border-radius: 3px; }
+
+/* --- PAGINATION --- */
+.page-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+.page-item.active .page-link {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}

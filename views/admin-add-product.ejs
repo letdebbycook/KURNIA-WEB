@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Produk Baru - Admin KURNIA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+        }
+        /* Style untuk preview gambar kecil */
+        .preview-sm {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px dashed #ccc;
+            display: none; /* Sembunyikan default-nya */
+            margin-bottom: 5px;
+        }
+        .preview-main {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            display: none;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold">Tambah Produk Kain</h3>
+                    <a href="/admin/products" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-2"></i> Kembali
+                    </a>
+                </div>
+
+                <div class="form-card">
+                    <form action="/admin/products/add" method="POST" enctype="multipart/form-data">
+                        
+                        <div class="row g-4">
+                            <!-- KIRI: Info Produk -->
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nama Jenis Kain</label>
+                                    <input type="text" class="form-control bg-light border-0 py-2" name="name" placeholder="Contoh: Cotton Combed 30s" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Kategori</label>
+                                    <select class="form-select bg-light border-0 py-2" name="category">
+                                        <option value="Katun">Katun</option>
+                                        <option value="Rayon">Rayon</option>
+                                        <option value="Silk">Silk / Sutra</option>
+                                        <option value="Polyester">Polyester</option>
+                                        <option value="Spandex">Spandex</option>
+                                        <option value="Linen">Linen</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Harga (Rp)</label>
+                                        <input type="number" class="form-control bg-light border-0 py-2" name="price" placeholder="0" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Stok Awal</label>
+                                        <input type="number" class="form-control bg-light border-0 py-2" name="stock" value="0" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Deskripsi</label>
+                                    <textarea class="form-control bg-light border-0" name="description" rows="4" placeholder="Jelaskan tekstur, kegunaan, dan kelebihan kain ini..." required></textarea>
+                                </div>
+                            </div>
+
+                            <!-- KANAN: Upload Multi Gambar -->
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold mb-3">Foto Produk</label>
+                                
+                                <!-- Gambar Utama -->
+                                <div class="card p-3 mb-3 border-secondary border-opacity-25">
+                                    <label class="small fw-bold mb-1 text-dark">Gambar Utama (Wajib)</label>
+                                    <!-- Preview Image -->
+                                    <img id="preview1" class="preview-main" alt="Preview Utama">
+                                    <!-- Input File -->
+                                    <input type="file" class="form-control form-control-sm" name="image" accept="image/*" required onchange="previewImage(this, 'preview1')">
+                                </div>
+
+                                <!-- Gambar Tambahan -->
+                                <div class="card p-3 bg-light border-0">
+                                    <label class="small fw-bold mb-2 text-muted">Gambar Tambahan (Opsional)</label>
+                                    
+                                    <div class="row g-2">
+                                        <!-- View 2 -->
+                                        <div class="col-4">
+                                            <label class="small text-muted d-block text-center">View 2</label>
+                                            <img id="preview2" class="preview-sm">
+                                            <input type="file" class="form-control form-control-sm px-1" name="image2" accept="image/*" onchange="previewImage(this, 'preview2')">
+                                        </div>
+                                        <!-- View 3 -->
+                                        <div class="col-4">
+                                            <label class="small text-muted d-block text-center">View 3</label>
+                                            <img id="preview3" class="preview-sm">
+                                            <input type="file" class="form-control form-control-sm px-1" name="image3" accept="image/*" onchange="previewImage(this, 'preview3')">
+                                        </div>
+                                        <!-- View 4 -->
+                                        <div class="col-4">
+                                            <label class="small text-muted d-block text-center">View 4</label>
+                                            <img id="preview4" class="preview-sm">
+                                            <input type="file" class="form-control form-control-sm px-1" name="image4" accept="image/*" onchange="previewImage(this, 'preview4')">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text small text-muted mt-2">Format: JPG, PNG, WEBP. Max 5MB.</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-dark btn-lg rounded-pill fw-bold">Simpan Produk</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript untuk Preview Gambar -->
+    <script>
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block'; // Tampilkan gambar
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+                preview.style.display = 'none'; // Sembunyikan jika batal pilih
+            }
+        }
+    </script>
+</body>
+</html>
