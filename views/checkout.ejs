@@ -112,17 +112,18 @@
                         
                         <div class="d-flex flex-column gap-3">
                             <div>
-                                <input type="radio" class="btn-check" name="payment_method" id="bank" value="Bank Transfer" onchange="showPaymentInfo('bank')">
+                                <input type="radio" class="btn-check" name="payment_method" id="bank" value="Bank Transfer" checked onchange="showPaymentInfo('bank')">
                                 <label class="payment-option" for="bank">
                                     <div class="bg-primary bg-opacity-10 rounded p-2 text-primary"><i class="bi bi-bank fs-3"></i></div>
                                     <div class="flex-grow-1">
                                         <div class="fw-bold">Transfer Bank Manual</div>
                                         <small class="text-muted">BCA, Mandiri, BNI, BRI</small>
                                     </div>
-                                    <i class="bi bi-circle text-secondary uncheck-icon"></i>
-                                    <i class="bi bi-check-circle-fill fs-4 text-success check-icon d-none"></i>
+                                    <i class="bi bi-circle text-secondary uncheck-icon d-none"></i>
+                                    <i class="bi bi-check-circle-fill fs-4 text-success check-icon"></i>
                                 </label>
-                                <div id="info-bank" class="payment-instruction fade-in">
+                                
+                                <div id="info-bank" class="payment-instruction fade-in" style="display: block;">
                                     <h6 class="fw-bold text-muted mb-2">Transfer ke:</h6>
                                     <div class="bg-white border rounded p-3 d-inline-block mb-3 shadow-sm">
                                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/330px-BANK_BRI_logo.svg.png?20180118061811" alt="BCA" style="height: 30px;" class="mb-2 d-block mx-auto">
@@ -132,27 +133,8 @@
                                     <div class="alert alert-warning small py-2 mb-0">Wajib upload bukti transfer.</div>
                                 </div>
                             </div>
-
-                            <div>
-                                <input type="radio" class="btn-check" name="payment_method" id="qris" value="QRIS" onchange="showPaymentInfo('qris')">
-                                <label class="payment-option" for="qris">
-                                    <div class="bg-success bg-opacity-10 rounded p-2 text-success"><i class="bi bi-qr-code-scan fs-3"></i></div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold">QRIS (Scan & Bayar)</div>
-                                        <small class="text-muted">Gopay, OVO, Dana, ShopeePay</small>
-                                    </div>
-                                    <i class="bi bi-circle text-secondary uncheck-icon"></i>
-                                    <i class="bi bi-check-circle-fill fs-4 text-success check-icon d-none"></i>
-                                </label>
-                                <div id="info-qris" class="payment-instruction fade-in">
-                                    <h6 class="fw-bold text-muted mb-2">Scan QR Code:</h6>
-                                    <div class="bg-white border rounded p-3 d-inline-block mb-3 shadow-sm">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" style="width: 150px;">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="upload-area" class="mt-4 pt-3 border-top" style="display: none;">
+                            
+                            <div id="upload-area" class="mt-4 pt-3 border-top">
                                 <label class="form-label fw-bold text-dark">Upload Bukti Pembayaran <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="file" class="form-control" name="payment_proof" id="paymentProof" accept="image/*" required>
@@ -209,30 +191,21 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5_yed4GlJj2aczfdXIiBzZtFRRNCQDws&libraries=places"></script>
 
     <script>
-        // --- PAYMENT LOGIC ---
-        function showPaymentInfo(method) {
-            const infoBank = document.getElementById('info-bank');
-            const infoQris = document.getElementById('info-qris');
+        // --- PAYMENT LOGIC (Disederhanakan) ---
+        // Karena hanya ada satu metode, kita pastikan upload area selalu muncul
+        document.addEventListener("DOMContentLoaded", () => {
             const uploadArea = document.getElementById('upload-area');
-
-            if(infoBank) infoBank.style.display = 'none';
-            if(infoQris) infoQris.style.display = 'none';
             if(uploadArea) {
                 uploadArea.style.display = 'block';
                 uploadArea.classList.add('fade-in');
             }
+        });
 
-            if (method === 'bank' && infoBank) infoBank.style.display = 'block';
-            else if (method === 'qris' && infoQris) infoQris.style.display = 'block';
-
-            document.querySelectorAll('.check-icon').forEach(el => el.classList.add('d-none'));
-            document.querySelectorAll('.uncheck-icon').forEach(el => el.classList.remove('d-none'));
-            const checkedInput = document.querySelector(`input[name="payment_method"]:checked`);
-            if(checkedInput) {
-                const label = checkedInput.nextElementSibling;
-                label.querySelector('.check-icon').classList.remove('d-none');
-                label.querySelector('.uncheck-icon').classList.add('d-none');
-            }
+        // Function ini dipertahankan jika Anda ingin menambahkan metode lain di masa depan
+        function showPaymentInfo(method) {
+            // Karena hanya bank, logika ini sebenarnya redundant tapi aman dibiarkan
+            const infoBank = document.getElementById('info-bank');
+            if(infoBank) infoBank.style.display = 'block';
         }
 
         // --- MAP LOGIC ---
@@ -240,7 +213,7 @@
         let marker;
         let geocoder;
 
-        function initMap(lat = -6.2088, lng = 106.8456) { // Default Jakarta (Change to your city)
+        function initMap(lat = -6.2088, lng = 106.8456) { // Default Jakarta
             const location = { lat: lat, lng: lng };
             
             map = new google.maps.Map(document.getElementById("map-container"), {
@@ -336,13 +309,6 @@
                 alert("Browser tidak mendukung Geolocation.");
             }
         }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const checkedInput = document.querySelector(`input[name="payment_method"]:checked`);
-            if(checkedInput) {
-                showPaymentInfo(checkedInput.value === 'Bank Transfer' ? 'bank' : 'qris');
-            }
-        });
     </script>
 </body>
 </html>
