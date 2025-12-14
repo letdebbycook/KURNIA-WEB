@@ -7,6 +7,17 @@ const multer = require("multer");
 const fs = require("fs"); 
 const db = require("./config/db");
 const { requireAdmin, requirePelanggan } = require("./middleware/auth");
+const midtransClient = require('midtrans-client');
+
+// ==============================================
+// // Konfigurasi Midtrans Snap
+// let snap = new midtransClient.Snap({
+//     // Set ke true jika sudah live production
+//     isProduction : false, 
+//     // GANTI DENGAN SERVER KEY ANDA DARI DASHBOARD MIDTRANS
+//     serverKey : 'SB-Mid-server-xxxxxxxxxxxx' 
+// });
+// ==============================================
 
 // --- [BARU] Import Library untuk Email & Token ---
 const nodemailer = require("nodemailer");

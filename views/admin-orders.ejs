@@ -54,7 +54,6 @@
 
     <div class="container-fluid p-0">
         <div class="row g-0">
-            <!-- SIDEBAR -->
             <div class="col-lg-2 d-none d-lg-block sidebar">
                 <div class="logo-container">
                     <h4 class="fw-bold mb-0 ls-1">KURNIA<span style="color: #c9a227;">.</span></h4>
@@ -70,10 +69,8 @@
                 </div>
             </div>
 
-            <!-- CONTENT -->
             <div class="col-lg-10 d-flex flex-column min-vh-100">
                 
-                <!-- TOPBAR -->
                 <div class="topbar d-flex justify-content-between align-items-center m-4">
                     <div class="d-flex align-items-center">
                         <h5 class="fw-bold mb-0">Daftar Pesanan & Pembayaran</h5>
@@ -89,7 +86,6 @@
                     </div>
                 </div>
 
-                <!-- TABEL PESANAN -->
                 <div class="px-4 pb-4">
                     <div class="table-card">
                         <div class="table-responsive">
@@ -98,7 +94,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Pelanggan</th>
-                                        <th>Total</th>
+                                        <th style="width: 250px;">Alamat Pengiriman</th> <th>Total</th>
                                         <th>Pembayaran</th>
                                         <th>Status</th>
                                         <th style="min-width: 180px;">Aksi</th>
@@ -113,9 +109,15 @@
                                                     <div class="fw-medium"><%= order.full_name || order.username %></div>
                                                     <small class="text-muted"><%= new Date(order.order_date).toLocaleDateString('id-ID') %></small>
                                                 </td>
+                                                
+                                                <td>
+                                                    <div style="max-height: 80px; overflow-y: auto; font-size: 0.85rem;" class="text-secondary">
+                                                        <%= order.shipping_address || '-' %>
+                                                    </div>
+                                                </td>
+
                                                 <td class="fw-bold">Rp <%= Number(order.total_price).toLocaleString('id-ID') %></td>
                                                 
-                                                <!-- Pembayaran & Bukti -->
                                                 <td>
                                                     <div class="d-flex flex-column align-items-start gap-1">
                                                         <span class="badge bg-light text-dark border">
@@ -132,7 +134,6 @@
                                                     </div>
                                                 </td>
 
-                                                <!-- Status Badge -->
                                                 <td>
                                                     <% 
                                                         let badgeClass = 'bg-secondary text-white';
@@ -147,10 +148,8 @@
                                                     </span>
                                                 </td>
 
-                                                <!-- Aksi: Update & Delete -->
                                                 <td>
                                                     <div class="d-flex gap-2 align-items-center">
-                                                        <!-- Form Update Status -->
                                                         <form action="/admin/orders/update-status" method="POST" class="d-flex gap-1">
                                                             <input type="hidden" name="order_id" value="<%= order.id %>">
                                                             <select name="status" class="form-select form-select-sm" style="width: 110px;">
@@ -165,7 +164,6 @@
                                                             </button>
                                                         </form>
 
-                                                        <!-- Tombol Hapus -->
                                                         <a href="/admin/orders/delete/<%= order.id %>" 
                                                            class="btn btn-sm btn-danger" 
                                                            title="Hapus Pesanan"
@@ -178,7 +176,7 @@
                                         <% }); %>
                                     <% } else { %>
                                         <tr>
-                                            <td colspan="6" class="text-center py-5 text-muted">Belum ada pesanan masuk.</td>
+                                            <td colspan="7" class="text-center py-5 text-muted">Belum ada pesanan masuk.</td>
                                         </tr>
                                     <% } %>
                                 </tbody>
@@ -191,7 +189,6 @@
         </div>
     </div>
 
-    <!-- MODAL BUKTI PEMBAYARAN -->
     <div class="modal fade" id="proofModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

@@ -11,7 +11,6 @@
     <style>
         body { background-color: #f8f9fa; padding-top: 80px; }
         
-        /* Style Pilihan Pembayaran */
         .payment-option {
             border: 2px solid #eee;
             border-radius: 12px;
@@ -25,7 +24,6 @@
         }
         .payment-option:hover { border-color: #ccc; }
         
-        /* Radio button tersembunyi, style label saat dicek */
         .btn-check:checked + .payment-option {
             border-color: var(--accent-color, #c9a227);
             background-color: #fffbf0;
@@ -41,39 +39,35 @@
         }
 
         .item-thumb { 
-            width: 60px; 
-            height: 60px; 
-            object-fit: cover; 
-            border-radius: 8px; 
-            border: 1px solid #eee;
+            width: 60px; height: 60px; object-fit: cover; 
+            border-radius: 8px; border: 1px solid #eee;
         }
         
-        /* Kotak Instruksi Pembayaran */
         .payment-instruction {
-            background-color: #f8f9fa;
-            border: 1px dashed #ccc;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-top: 15px;
-            display: none; /* Sembunyikan default */
+            background-color: #f8f9fa; border: 1px dashed #ccc;
+            border-radius: 12px; padding: 20px; text-align: center;
+            margin-top: 15px; display: none;
         }
         
-        /* Animasi muncul */
         .fade-in { animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Sticky Summary pada Desktop */
-        .sticky-summary {
-            position: sticky;
-            top: 100px;
+        .sticky-summary { position: sticky; top: 100px; }
+
+        /* Map Container */
+        #map-container {
+            height: 350px;
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
 
 <body>
 
-    <!-- NAVBAR SEDERHANA -->
     <nav class="navbar navbar-light bg-white fixed-top shadow-sm py-3">
         <div class="container">
             <a class="navbar-brand fw-bold text-decoration-none text-dark" href="/keranjang">
@@ -84,38 +78,43 @@
     </nav>
 
     <div class="container my-4">
-        <!-- FORM UTAMA (PENTING: enctype="multipart/form-data" untuk upload file) -->
         <form action="/checkout" method="POST" enctype="multipart/form-data" id="checkoutForm">
             <div class="row g-5">
                 
-                <!-- KOLOM KIRI: DATA PENGIRIMAN & PEMBAYARAN -->
                 <div class="col-lg-8">
                     
-                    <!-- 1. ALAMAT PENGIRIMAN -->
                     <div class="checkout-card">
                         <h5 class="fw-bold mb-3 text-dark">
                             <i class="bi bi-geo-alt-fill me-2 text-danger"></i> Alamat Pengiriman
                         </h5>
                         <div class="form-group">
                             <label class="form-label small text-muted">Alamat Lengkap</label>
-                            <textarea name="shipping_address" class="form-control bg-light border-0" rows="3" placeholder="Nama Jalan, No. Rumah, Kecamatan, Kota, Kode Pos..." required></textarea>
+                            <textarea name="shipping_address" id="shipping_address" class="form-control bg-light border-0" rows="3" placeholder="Cari di peta atau ketik manual (Nama Jalan, No. Rumah, Kecamatan...)" required></textarea>
+                            
+                            <div class="d-flex gap-2 mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="getLocation()">
+                                    <i class="bi bi-crosshair me-1"></i> Lokasi Saya Saat Ini
+                                </button>
+                                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="toggleMap()">
+                                    <i class="bi bi-map-fill me-1"></i> Buka/Tutup Peta
+                                </button>
+                            </div>
+
+                            <div id="map-container"></div>
+                            <small class="text-muted fst-italic mt-1 d-block" id="map-hint" style="display:none;">*Geser pin merah untuk menyesuaikan lokasi alamat.</small>
                         </div>
                     </div>
 
-                    <!-- 2. METODE PEMBAYARAN -->
                     <div class="checkout-card">
                         <h5 class="fw-bold mb-4 text-dark">
                             <i class="bi bi-wallet2 me-2 text-primary"></i> Metode Pembayaran
                         </h5>
                         
                         <div class="d-flex flex-column gap-3">
-                            <!-- Opsi Bank Transfer -->
                             <div>
                                 <input type="radio" class="btn-check" name="payment_method" id="bank" value="Bank Transfer" onchange="showPaymentInfo('bank')">
                                 <label class="payment-option" for="bank">
-                                    <div class="bg-primary bg-opacity-10 rounded p-2 text-primary">
-                                        <i class="bi bi-bank fs-3"></i>
-                                    </div>
+                                    <div class="bg-primary bg-opacity-10 rounded p-2 text-primary"><i class="bi bi-bank fs-3"></i></div>
                                     <div class="flex-grow-1">
                                         <div class="fw-bold">Transfer Bank Manual</div>
                                         <small class="text-muted">BCA, Mandiri, BNI, BRI</small>
@@ -123,41 +122,51 @@
                                     <i class="bi bi-circle text-secondary uncheck-icon"></i>
                                     <i class="bi bi-check-circle-fill fs-4 text-success check-icon d-none"></i>
                                 </label>
-                                
-                                <!-- INFO BANK (Muncul jika dipilih) -->
                                 <div id="info-bank" class="payment-instruction fade-in">
-                                    <h6 class="fw-bold text-muted mb-2">Silakan transfer ke rekening berikut:</h6>
+                                    <h6 class="fw-bold text-muted mb-2">Transfer ke:</h6>
                                     <div class="bg-white border rounded p-3 d-inline-block mb-3 shadow-sm">
                                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/330px-BANK_BRI_logo.svg.png?20180118061811" alt="BCA" style="height: 30px;" class="mb-2 d-block mx-auto">
-                                        <h4 class="fw-bold text-primary mb-0 tracking-wide">7662 0101 7664 535</h4>
+                                        <h4 class="fw-bold text-primary mb-0">7662 0101 7664 535</h4>
                                         <small class="text-muted">a.n. DEBBY GUSDI AHKBAR</small>
                                     </div>
-                                    <div class="alert alert-warning small py-2 mb-0">
-                                        <i class="bi bi-info-circle-fill me-1"></i> Penting: Mohon upload bukti transfer di bawah agar pesanan dapat segera diproses.
+                                    <div class="alert alert-warning small py-2 mb-0">Wajib upload bukti transfer.</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <input type="radio" class="btn-check" name="payment_method" id="qris" value="QRIS" onchange="showPaymentInfo('qris')">
+                                <label class="payment-option" for="qris">
+                                    <div class="bg-success bg-opacity-10 rounded p-2 text-success"><i class="bi bi-qr-code-scan fs-3"></i></div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">QRIS (Scan & Bayar)</div>
+                                        <small class="text-muted">Gopay, OVO, Dana, ShopeePay</small>
+                                    </div>
+                                    <i class="bi bi-circle text-secondary uncheck-icon"></i>
+                                    <i class="bi bi-check-circle-fill fs-4 text-success check-icon d-none"></i>
+                                </label>
+                                <div id="info-qris" class="payment-instruction fade-in">
+                                    <h6 class="fw-bold text-muted mb-2">Scan QR Code:</h6>
+                                    <div class="bg-white border rounded p-3 d-inline-block mb-3 shadow-sm">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" style="width: 150px;">
                                     </div>
                                 </div>
                             </div>
-                        <!-- 3. UPLOAD BUKTI PEMBAYARAN -->
-                        <div id="upload-area" class="mt-4 pt-3 border-top" style="display: none;">
-                            <label class="form-label fw-bold text-dark">Upload Bukti Pembayaran <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="file" class="form-control" name="payment_proof" id="paymentProof" accept="image/*" required>
-                                <label class="input-group-text" for="paymentProof"><i class="bi bi-upload"></i></label>
-                            </div>
-                            <div class="form-text text-muted small mt-1">
-                                Format: JPG, PNG, JPEG. Maksimal ukuran file 5MB.
+
+                            <div id="upload-area" class="mt-4 pt-3 border-top" style="display: none;">
+                                <label class="form-label fw-bold text-dark">Upload Bukti Pembayaran <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" name="payment_proof" id="paymentProof" accept="image/*" required>
+                                    <label class="input-group-text" for="paymentProof"><i class="bi bi-upload"></i></label>
+                                </div>
+                                <div class="form-text text-muted small mt-1">Format: JPG, PNG, JPEG. Max 5MB.</div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
-                <!-- KOLOM KANAN: RINGKASAN PESANAN -->
                 <div class="col-lg-4">
                     <div class="checkout-card sticky-summary">
                         <h5 class="fw-bold mb-4">Ringkasan Pesanan</h5>
-                        
-                        <!-- List Item Kecil -->
                         <div class="d-flex flex-column gap-3 mb-4 pe-2" style="max-height: 300px; overflow-y: auto;">
                             <% cartItems.forEach(item => { %>
                                 <div class="d-flex align-items-start gap-3">
@@ -172,9 +181,7 @@
                                 </div>
                             <% }); %>
                         </div>
-
                         <hr class="border-secondary opacity-10">
-
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Subtotal Produk</span>
                             <span class="fw-medium">Rp <%= Number(subtotal).toLocaleString('id-ID') %></span>
@@ -183,19 +190,13 @@
                             <span class="text-muted">Ongkos Kirim</span>
                             <span class="text-success fw-bold">Konfirmasi WhatsApp</span>
                         </div>
-                        
                         <div class="d-flex justify-content-between mb-4 pt-2 border-top">
                             <span class="fs-5 fw-bold mt-2">Total Tagihan</span>
                             <span class="fs-4 fw-bold text-primary mt-2">Rp <%= Number(total).toLocaleString('id-ID') %></span>
                         </div>
-
                         <button type="submit" form="checkoutForm" class="btn btn-dark w-100 rounded-pill py-3 fw-bold shadow-sm btn-buy">
                             Konfirmasi Pembayaran <i class="bi bi-check-circle-fill ms-2"></i>
                         </button>
-                        
-                        <div class="text-center mt-3">
-                            <p class="small text-muted mb-0"><i class="bi bi-shield-check me-1"></i> Transaksi Aman & Terenkripsi</p>
-                        </div>
                     </div>
                 </div>
 
@@ -203,46 +204,144 @@
         </form>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- SCRIPT LOGIKA TAMPILAN -->
-    <script>
-        function showPaymentInfo(method) {
-            // 1. Sembunyikan semua info instruksi
-            document.getElementById('info-bank').style.display = 'none';
-            document.getElementById('info-qris').style.display = 'none';
-            
-            // 2. Tampilkan area upload bukti (Wajib untuk kedua metode)
-            document.getElementById('upload-area').style.display = 'block';
-            // Animasi fade-in kecil
-            document.getElementById('upload-area').classList.add('fade-in');
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5_yed4GlJj2aczfdXIiBzZtFRRNCQDws&libraries=places"></script>
 
-            // 3. Tampilkan instruksi yang sesuai
-            if (method === 'bank') {
-                document.getElementById('info-bank').style.display = 'block';
-            } else if (method === 'qris') {
-                document.getElementById('info-qris').style.display = 'block';
+    <script>
+        // --- PAYMENT LOGIC ---
+        function showPaymentInfo(method) {
+            const infoBank = document.getElementById('info-bank');
+            const infoQris = document.getElementById('info-qris');
+            const uploadArea = document.getElementById('upload-area');
+
+            if(infoBank) infoBank.style.display = 'none';
+            if(infoQris) infoQris.style.display = 'none';
+            if(uploadArea) {
+                uploadArea.style.display = 'block';
+                uploadArea.classList.add('fade-in');
             }
 
-            // 4. Update UI Radio Button (Visual Check Icon)
-            // Reset semua icon
+            if (method === 'bank' && infoBank) infoBank.style.display = 'block';
+            else if (method === 'qris' && infoQris) infoQris.style.display = 'block';
+
             document.querySelectorAll('.check-icon').forEach(el => el.classList.add('d-none'));
             document.querySelectorAll('.uncheck-icon').forEach(el => el.classList.remove('d-none'));
-
-            // Aktifkan icon pada pilihan yang diklik
-            const selectedLabel = document.querySelector(`input[name="payment_method"][value="${method === 'bank' ? 'Bank Transfer' : 'QRIS'}"]`).nextElementSibling;
-            selectedLabel.querySelector('.check-icon').classList.remove('d-none');
-            selectedLabel.querySelector('.uncheck-icon').classList.add('d-none');
+            const checkedInput = document.querySelector(`input[name="payment_method"]:checked`);
+            if(checkedInput) {
+                const label = checkedInput.nextElementSibling;
+                label.querySelector('.check-icon').classList.remove('d-none');
+                label.querySelector('.uncheck-icon').classList.add('d-none');
+            }
         }
-        
-        // Jalankan sekali saat halaman dimuat (untuk handle refresh atau back button)
-        document.addEventListener("DOMContentLoaded", () => {
-            const bankRadio = document.getElementById('bank');
-            const qrisRadio = document.getElementById('qris');
 
-            if(bankRadio.checked) showPaymentInfo('bank');
-            else if(qrisRadio.checked) showPaymentInfo('qris');
+        // --- MAP LOGIC ---
+        let map;
+        let marker;
+        let geocoder;
+
+        function initMap(lat = -6.2088, lng = 106.8456) { // Default Jakarta (Change to your city)
+            const location = { lat: lat, lng: lng };
+            
+            map = new google.maps.Map(document.getElementById("map-container"), {
+                zoom: 15,
+                center: location,
+                mapTypeControl: false,
+            });
+
+            marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                draggable: true,
+                animation: google.maps.Animation.DROP
+            });
+
+            geocoder = new google.maps.Geocoder();
+
+            marker.addListener("dragend", () => {
+                const position = marker.getPosition();
+                geocodePosition(position);
+                map.panTo(position);
+            });
+
+            map.addListener("click", (e) => {
+                marker.setPosition(e.latLng);
+                geocodePosition(e.latLng);
+                map.panTo(e.latLng);
+            });
+        }
+
+        function geocodePosition(pos) {
+            geocoder.geocode({ location: pos }, (results, status) => {
+                if (status === "OK") {
+                    if (results[0]) {
+                        document.getElementById("shipping_address").value = results[0].formatted_address;
+                    } else {
+                        alert("Alamat tidak ditemukan.");
+                    }
+                } else {
+                    alert("Geocoder gagal karena: " + status);
+                }
+            });
+        }
+
+        function toggleMap() {
+            const mapContainer = document.getElementById("map-container");
+            const mapHint = document.getElementById("map-hint");
+            
+            if (mapContainer.style.display === "none" || mapContainer.style.display === "") {
+                mapContainer.style.display = "block";
+                mapHint.style.display = "block";
+                if (!map) {
+                    initMap(); 
+                } else {
+                    google.maps.event.trigger(map, 'resize');
+                }
+            } else {
+                mapContainer.style.display = "none";
+                mapHint.style.display = "none";
+            }
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                document.getElementById("shipping_address").value = "Mencari lokasi Anda...";
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        
+                        const mapContainer = document.getElementById("map-container");
+                        if(mapContainer.style.display === "none") {
+                            toggleMap();
+                        }
+
+                        const pos = { lat: userLat, lng: userLng };
+                        if(map) {
+                            map.setCenter(pos);
+                            marker.setPosition(pos);
+                            geocodePosition(pos);
+                        } else {
+                            initMap(userLat, userLng);
+                            geocodePosition(pos);
+                        }
+                    },
+                    (error) => {
+                        alert("Gagal mendeteksi lokasi. Pastikan GPS aktif.");
+                        document.getElementById("shipping_address").value = "";
+                    }
+                );
+            } else {
+                alert("Browser tidak mendukung Geolocation.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const checkedInput = document.querySelector(`input[name="payment_method"]:checked`);
+            if(checkedInput) {
+                showPaymentInfo(checkedInput.value === 'Bank Transfer' ? 'bank' : 'qris');
+            }
         });
     </script>
 </body>
